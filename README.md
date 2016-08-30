@@ -1,0 +1,2 @@
+# CImage_SVM_HOG
+SVM_HOG_C++
