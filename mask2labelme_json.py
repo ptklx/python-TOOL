@@ -282,6 +282,7 @@ def getMultiShapes(oriImgPath,
     obj['imagePath'] = imgname
     # print(obj['imagePath'])
     # obj['imageData'] = str(imgEncode(oriImgPath))
+    obj['imageData'] = None #str(imgEncode(oriImgPath))
 
     obj['imageHeight'] = labelShape[0]
     obj['imageWidth'] = labelShape[1]
