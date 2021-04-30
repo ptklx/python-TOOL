@@ -279,7 +279,7 @@ def getMultiShapes(oriImgPath,
     obj['shapes'] = shapes
     # print(shapes)
     (_,imgname) = os.path.split(oriImgPath)
-    obj['imagePath'] = imgname
+    obj['imagePath'] = imgname   #这个文件名很重要，是通过这个访问
     # print(obj['imagePath'])
     # obj['imageData'] = str(imgEncode(oriImgPath))
     obj['imageData'] = None #str(imgEncode(oriImgPath))
