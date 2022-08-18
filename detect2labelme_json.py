@@ -1,16 +1,15 @@
 #coding: utf-8
 import os
-import glob
-import argparse
-import csv
 import json
 import cv2
+import numpy as np 
 ###这里是把文件读取转换成labelme的json形式
 
-def convertlist2json(outputdir,image_path,boxlist,boxes_classes_list,point_list=None,point_name_list=None):
+def convertlist2json(outputdir,image_path,boxlist,boxes_classes_list):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
     out_json_file = os.path.join(outputdir,os.path.splitext(os.path.split(image_path)[1])[0]+".json")
+    face_point_name=("leye","reye","nose","lmouth","rmouth")
     shapes =[]
     for index,b in enumerate(boxlist):
         if not isinstance(boxlist[0],list):
@@ -23,19 +22,17 @@ def convertlist2json(outputdir,image_path,boxlist,boxes_classes_list,point_list=
             group_id=None,
         )
         shapes.append(data1)
-    if point_list is not None and point_name_list is not None:
-        for index,p in enumerate(point_list):
-            if not isinstance(p,list):
-                p = p.tolist()
-            data2 = dict(
-                label=point_name_list[index],
-                points=[[float(p[0]),float(p[1])]],
-                shape_type="point",
-                flags={},
-                group_id=None,
-            )
-            shapes.append(data2)
-
+        if len(b)>14:
+            for index,p in enumerate(face_point_name):
+                data2 = dict(
+                    label=p,
+                    points=[[float(b[5+index*2]),float(b[6+index*2])]],
+                    shape_type="point",
+                    flags={},
+                    group_id=None,
+                )
+                shapes.append(data2)
+    
     imageHeight =0
     imageWidth =0
     if  os.path.isfile(image_path):
@@ -57,9 +54,6 @@ def convertlist2json(outputdir,image_path,boxlist,boxes_classes_list,point_list=
     except Exception as e:
         raise 
 
-import cv2
-import os
-import numpy as np 
 
 def draw_show(img_raw,dets):
     for b in dets:
@@ -81,7 +75,7 @@ def draw_show(img_raw,dets):
     cv2.imshow("detect face",img_raw)
 
 
-def main(main_path):
+def main(main_path,out_json_fold):
     pic_folder = os.path.join(main_path, 'images')
 
     label_folder = os.path.join(main_path, 'label')
@@ -89,7 +83,8 @@ def main(main_path):
 
     # list_imgname = sorted(list_imgname)  #不改变原序列
     # list_name = sorted(list_name,key=lambda x:int(x.split(".jp")[0])) 
-    out_json_fold=r"D:\data\face\single_face_1\train_whole\evaluation\json"
+    # out_json_fold=r"D:\data\face\single_face_1\train_whole\evaluation\json"
+    out_json_fold=out_json_fold
     for img_p in list_name:
         img_path = os.path.join(pic_folder,img_p)
         img_raw = cv2.imread(img_path, cv2.IMREAD_COLOR)
@@ -106,27 +101,24 @@ def main(main_path):
         boxs = np.array(boxs, dtype=np.float32)
 
 #######################
-        face_point_name=("leye","reye","nose","lmouth","rmouth")
         box_list =[]
         boxs_class_list =[]
-        point_list =[]
-        point_name_list=[]
         for b in boxs:
-            if b[4] < 0.6:
+            if b[4] < 0.5:
                 continue
-            box_list.append(b[:4])
+            box_list.append(b)
             boxs_class_list.append("face")
-            if len(b>14):
-                for i in range(5):
-                    point_list.append([b[5+i*2],b[6+2*i]])
-                    point_name_list.append(face_point_name[i])
-
-        convertlist2json(out_json_fold,img_path,box_list,boxs_class_list,point_list=point_list,point_name_list=point_name_list)
+        convertlist2json(out_json_fold,img_path,box_list,boxs_class_list)
 ################################
         draw_show(img_raw,boxs)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
 
 
 if __name__=="__main__":
-    main_path=r"D:\data\face\single_face_1\train_whole\evaluation"
-    main(main_path)
+    # main_path=r"D:\data\face\single_face_1\train_whole\evaluation"
+    # out_json_fold=r"D:\data\face\single_face_1\train_whole\evaluation\json"
+
+    main_path=r"D:\data\face\single_face_1\train_whole\train"
+    out_json_fold=r"D:\data\face\single_face_1\train_whole\train\json"
+
+    main(main_path,out_json_fold)
